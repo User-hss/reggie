@@ -42,7 +42,7 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
-
+.mvn
 ### Example user template template
 ### Example user template
 
