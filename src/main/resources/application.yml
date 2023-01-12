@@ -21,4 +21,4 @@ server:
 
 #图片资源本地存放地址
 path:
-  img: \usr\local\img\
+  img: /usr/local/img/
