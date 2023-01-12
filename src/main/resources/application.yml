@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/reggie
+    url: jdbc:mysql://123.56.116.235:3306/reggie
     username: root
-    password: 199742aa
+    password: root
 
 mybatis-plus:
   configuration:
@@ -21,4 +21,4 @@ server:
 
 #图片资源本地存放地址
 path:
-  img: D:\img\
+  img: \usr\local\img\
