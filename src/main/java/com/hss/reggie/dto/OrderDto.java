@@ -10,4 +10,5 @@ import java.util.List;
 public class OrderDto extends Order {
     private List<OrderDetail> orderDetails;
     private Integer sumNum;//商品数量
+    private String userName;//用户姓名
 }
