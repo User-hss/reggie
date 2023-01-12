@@ -61,4 +61,13 @@ public class OrderController {
         pageInfo.setRecords(list);
         return R.success(pageInfo);
     }
+    @GetMapping("/page")
+    public R<Page> page(Integer page, Integer pageSize){
+        Page<Order> orderPage=new Page<>(page, pageSize);
+        LambdaQueryWrapper<Order> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Order::getUserId, BaseContext.getId());
+        queryWrapper.orderByDesc(Order::getOrderTime);
+        orderService.page(orderPage,queryWrapper);
+        return R.success(orderPage);
+    }
 }
