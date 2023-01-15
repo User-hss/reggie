@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -29,6 +30,8 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
     implements DishService{
     @Autowired
     private DishFlavorService dishFlavorService;
+    @Autowired
+    private RedisTemplate redisTemplate;
     @Override
     public void saveWithFlavor(DishDto dishDto) {
         //将菜品信息保存
@@ -86,11 +89,17 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(DishFlavor::getDishId,ids);
         dishFlavorService.remove(queryWrapper);
+        //redisTemplate.delete("dish_"+dishes.get(0).getCategoryId());
     }
 
     @Override
     public List<DishDto> getListWithFlavor(Dish dish) {
-        List<DishDto> dishDtoList=new ArrayList<>();
+        String key="dish_"+dish.getCategoryId();
+        List<DishDto> dishDtoList=(List<DishDto>) redisTemplate.opsForValue().get(key);
+        if (dishDtoList != null) {
+            return dishDtoList;
+        }
+        dishDtoList=new ArrayList<>();//防止空指针异常
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId()!=null,Dish::getCategoryId,dish.getCategoryId());
         queryWrapper.like(StringUtils.isNotEmpty(dish.getName()),Dish::getName,dish.getName());
@@ -101,6 +110,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
             DishDto dishDto = this.getByIdWithFlavor(item.getId());//根据菜品id查询DishDto
             dishDtoList.add(dishDto);
         }
+        redisTemplate.opsForValue().set(key,dishDtoList);
         return dishDtoList;
     }
 }

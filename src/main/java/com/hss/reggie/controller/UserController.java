@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -20,6 +21,8 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private RedisTemplate redisTemplate;
     /**
      * 手机端登录
      */
@@ -28,7 +31,7 @@ public class UserController {
         String phone = (String) map.get("phone");
         String code= (String) map.get("code");
         if (StringUtils.isNotEmpty(phone)) {
-            String o = (String) session.getAttribute(phone);
+            String o = (String) redisTemplate.opsForValue().get(phone);
             if (StringUtils.isNotEmpty(o)&&o.equals(code)) {
                 //登录成功，检查是否为新用户
                 LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
@@ -41,6 +44,7 @@ public class UserController {
                     userService.save(user);
                 }
                 session.setAttribute("user",user.getId());//将用户id存入session
+                redisTemplate.delete(phone);
                 return R.success(user);
             }
         }
@@ -50,7 +54,7 @@ public class UserController {
      * 发送验证码
      */
     @PostMapping("/sendMsg")
-    public R<String> sendMsg(@RequestBody User user, HttpSession session){
+    public R<String> sendMsg(@RequestBody User user){
         String phone = user.getPhone();
         if(StringUtils.isNotEmpty(phone)){
             //String code = ValidateCodeUtils.generateValidateCode4String(4);//生成随机4位验证码(有英文)
@@ -58,7 +62,7 @@ public class UserController {
             log.info("验证码=>{}",code);
             //发送短信...
             //SMSUtils.sendMessage("阿里云短信测试","SMS_154950909",phone,code);
-            session.setAttribute(phone, code);
+            redisTemplate.opsForValue().set(phone, code);
             return R.success("发送短信成功");
         }
         return R.error("发送短信失败");
