@@ -17,6 +17,8 @@ import com.hss.reggie.service.SetmealService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -68,6 +70,7 @@ public class SetmealController {
     /**
      * 条件查询
      */
+    @Cacheable(value = "setmeal",key = "#setmeal.categoryId")
     @GetMapping("/list")
     public R<List<Setmeal>> list(Setmeal setmeal){
         LambdaQueryWrapper<Setmeal> queryWrapper = new LambdaQueryWrapper<>();
@@ -88,6 +91,7 @@ public class SetmealController {
     /**
      * 保存套餐
      */
+    @CacheEvict(value = "setmeal",key = "#setmealDto.categoryId")
     @PostMapping
     public R<String> save(@RequestBody SetmealDto setmealDto){
         setmealService.saveWithDish(setmealDto);
@@ -96,14 +100,16 @@ public class SetmealController {
     /**
      * 删除套餐
      */
+    @CacheEvict(value = "setmeal",allEntries = true)//清理所有套餐缓存
     @DeleteMapping
     public R<String> delete(@RequestParam List<Long> ids) {
         setmealService.deleteWithFlavor(ids);
         return R.success("删除成功");
     }
     /**
-     * 修改菜品销售状态
+     * 修改套餐销售状态
      */
+    @CacheEvict(value = "setmeal",allEntries = true)//清理所有套餐缓存
     @PostMapping("/status/{status}")
     public R<String> updateStatus(@RequestParam List<Long> ids, @PathVariable Integer status){
         LambdaUpdateWrapper<Setmeal> updateWrapper = new LambdaUpdateWrapper<>();
@@ -115,6 +121,7 @@ public class SetmealController {
     /**
      * 修改套餐
      */
+    @CacheEvict(value = "setmeal",allEntries = true)//清理所有套餐缓存
     @PutMapping
     public R<String> update(@RequestBody SetmealDto setmealDto) {
         setmealService.updateWithFlavor(setmealDto);

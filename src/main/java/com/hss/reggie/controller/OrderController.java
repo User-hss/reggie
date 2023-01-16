@@ -103,4 +103,11 @@ public class OrderController {
         orderService.updateById(order);
         return R.success("订单状态更改成功");
     }
+    /**
+     * 再来一单
+     */
+    @PostMapping("again")
+    public R<String> again(@RequestBody Order order){
+        return R.success("功能未开发");
+    }
 }

@@ -37,4 +37,8 @@ public interface DishService extends IService<Dish> {
      * @return
      */
     List<DishDto> getListWithFlavor(Dish dish);
+    /**
+     * 清理菜品缓存
+     */
+    void clear();
 }

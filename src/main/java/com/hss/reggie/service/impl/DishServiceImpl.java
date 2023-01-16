@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
 * @author master
@@ -89,17 +91,17 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
         LambdaQueryWrapper<DishFlavor> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(DishFlavor::getDishId,ids);
         dishFlavorService.remove(queryWrapper);
-        //redisTemplate.delete("dish_"+dishes.get(0).getCategoryId());
     }
 
     @Override
     public List<DishDto> getListWithFlavor(Dish dish) {
-        String key="dish_"+dish.getCategoryId();
-        List<DishDto> dishDtoList=(List<DishDto>) redisTemplate.opsForValue().get(key);
-        if (dishDtoList != null) {
-            return dishDtoList;
-        }
-        dishDtoList=new ArrayList<>();//防止空指针异常
+//        String key="dish_"+dish.getCategoryId();
+//        List<DishDto> dishDtoList=(List<DishDto>) redisTemplate.opsForValue().get(key);
+//        if (dishDtoList != null) {
+//            return dishDtoList;
+//        }
+//        dishDtoList=new ArrayList<>();//防止空指针异常
+        ArrayList<DishDto> dishDtoList = new ArrayList<>();
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(dish.getCategoryId()!=null,Dish::getCategoryId,dish.getCategoryId());
         queryWrapper.like(StringUtils.isNotEmpty(dish.getName()),Dish::getName,dish.getName());
@@ -110,8 +112,16 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish>
             DishDto dishDto = this.getByIdWithFlavor(item.getId());//根据菜品id查询DishDto
             dishDtoList.add(dishDto);
         }
-        redisTemplate.opsForValue().set(key,dishDtoList);
+//        redisTemplate.opsForValue().set(key,dishDtoList,1, TimeUnit.HOURS);
         return dishDtoList;
+    }
+
+    @Override
+    public void clear() {
+        Set keys=redisTemplate.keys("dish_*");
+        if (keys != null) {
+            redisTemplate.delete(keys);
+        }
     }
 }
 
