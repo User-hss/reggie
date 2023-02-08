@@ -37,7 +37,6 @@ public class ValidateCodeUtils {
     public static String generateValidateCode4String(int length){
         Random rdm = new Random();
         String hash1 = Integer.toHexString(rdm.nextInt());
-        String capstr = hash1.substring(0, length);
-        return capstr;
+        return hash1.substring(0, length);
     }
 }
